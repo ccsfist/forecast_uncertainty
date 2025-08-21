@@ -12,6 +12,7 @@
 % DOUBLE-SPACED VERSION FOR SUBMISSION TO THE AMS
 \documentclass{ametsocV5}
 
+
 % TWO-COLUMN JOURNAL PAGE LAYOUT---FOR AUTHOR USE ONLY
 % \documentclass[twocol]{ametsocV5}
 
@@ -25,7 +26,7 @@
 \usepackage{mathptmx}%{times}
 \usepackage{newtxtext}
 \usepackage{newtxmath}
-
+\usepackage{natbib}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -33,7 +34,7 @@
 
 %% May use \\ to break lines in title:
 
-\title{Title here}
+\title{Quantifying Uncertainty in Forecast-Based Anticipatory Action Triggers Using Bootstrapping Methods}
 
 %%% Enter authors' names, as you see in this example:
 %%% Use \correspondingauthor{} and \thanks{Current Affiliation:...}
@@ -46,25 +47,13 @@
 % and Author Two\thanks{Current affiliation: American Meteorological Society, 
     % Boston, Massachusetts.}}
 
-\authors{Author One\correspondingauthor{Author name, email address}}
+\author{%
+Max Mauerman\affmark[1]\correspondingauthor{Max Mauerman, max.mauerman@columbia.edu}, Kevin Schwarzwald\affmark[1], Daniel Osgood\affmark[1], Nathan Lenssen\affmark[2], and Abdel-Lathif Younous\affmark[3]\\
+\affaddr{\affmark[1] Columbia University Climate School}\\
+\affaddr{\affmark[2] Colorado School of Mines \& NSF National Center for Atmospheric Reserach}\\
+\affaddr{\affmark[3] United Nations World Food Programme}\\
+}
 
-%% Follow this form:
-    % \affiliation{American Meteorological Society, 
-    % Boston, Massachusetts}
-
-\affiliation{}
-
-%% If appropriate, add additional authors, different affiliations:
-    %\extraauthor{Extra Author}
-    %\extraaffil{Affiliation, City, State/Province, Country}
-
-%\extraauthor{}
-%\extraaffil{}
-
-%% May repeat for a additional authors/affiliations:
-
-%\extraauthor{}
-%\extraaffil{}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ABSTRACT
@@ -74,9 +63,7 @@
 %
  
 
-\abstract{As of 2022, nearly 5 million smallholder farmers across a dozen countries are covered by Anticipatory Action (AA) programs \citep{chaves-gonzalez_anticipatory_2022}, which are aid schemes triggered if seasonal forecasts of rainfall cross a locally-determined threshold. By compensating farmers when yields are expected to be low, AA programs can help smooth risks, enhance food security, and reduce the likelihood of disaster-induced displacement \citep{thalheimer_forecast-based_2020,XX}. AA thresholds are often calculated to meet a donor or government [XX] trigger frequency; for example, [XX]’s AA program intends to trigger in the worst 20\% [XX] of seasons by expected agricultural yield. However, the observational rainfall record in many regions with AA programs is limited, and interannual or even interdecadal autocorrelation in the climate patterns that affect seasonal rainfall further reduces the effective sample size used to calculate these thresholds. This suggests that AA triggers may be highly sensitive to the available sample size of the observational record, increasing the risk that, due to poorly specified thresholds, either action is not triggered when it is needed or programs become financially unsustainable. In practice, forecasters are aware of this uncertainty, and ad hoc decisions on whether to trigger action are often made if seasonal forecasts are close to the threshold. To better support decision-making and formalize a process of determining whether a threshold for action may be crossed, we develop locally-defined confidence intervals for AA thresholds by recalculating triggers using bootstrap resampling of the observational record. We find that, though [XX], in regions with [XX characteristics/teleconnections/etc.], AA triggers are particularly unstable, [XX raising questions about the suitability of simple thresholds there] [XX alternatively; we find confidence intervals are narrow in most places, supporting the use of simple triggers...]
-
-[XX something something, these triggers are likely to be nonstationary in a changing climate as well. I think \citep{coughlan_de_perez_adapting_2022} says something about that]}
+\abstract{As of 2022, nearly 5 million smallholder farmers across a dozen countries are covered by Anticipatory Action (AA) programs \citep{chaves-gonzalez_anticipatory_2022}, which are aid schemes triggered if seasonal forecasts of rainfall cross a locally-determined threshold. AA thresholds are often calculated to meet a donor- or government-specified expected trigger frequency \citep{coughlan_de_perez_adapting_2022,world_food_programme_10_2024}. However, the observational rainfall record in many regions with AA programs is limited, and interannual and interdecadal autocorrelation in the climate patterns driving seasonal rainfall further reduce the effective sample size used to calculate these thresholds \citep{martinez_seasonal_2022}. Thus, AA triggers are highly sensitive to the limited observational record, increasing the risk that action is not triggered when it is needed or that programs become financially unsustainable due to excessive triggers. In practice, forecasters are aware of this uncertainty, and ad hoc decisions on whether to trigger action are often made if seasonal forecasts are close to the threshold. Seeking a more formalized, statistically sound alternative to ad hoc approaches, governments and humanitarian agencies have asked for transparent and intuitive metrics for forecast trigger uncertainty. To address this demand, we develop a method for quantifying the uncertainty in thresholds due to a limited observational record using bootstrap resampling. Examining United Nations operational AA forecasts in sub-Saharan Africa, we demonstrate how our method provides a better quantification of critical underlying uncertainty, enabling these AA systems to meet the state-of-the-art demanded by donors and the WMO.}
 \begin{document}
 
 %% Necessary!
@@ -96,135 +83,14 @@
 % \capsule
 % Capsule summary here.
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% MAIN BODY OF PAPER
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-
-%% In all cases, if there is only one entry of this type within
-%% the higher level heading, use the star form: 
-%%
-% \section{Section title}
-% \subsection*{subsection}
-% text...
-% \section{Section title}
-
-%vs
-
-% \section{Section title}
-% \subsection{subsection one}
-% text...
-% \subsection{subsection two}
-% \section{Section title}
-
-%%%
-% \section{First primary heading}
-
-% \subsection{First secondary heading}
-
-% \subsubsection{First tertiary heading}
-
-% \paragraph{First quaternary heading}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ACKNOWLEDGMENTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\acknowledgments
-Keep acknowledgments (note correct spelling: no ``e'' between the ``g'' and
-``m'') as brief as possible. In general, acknowledge only direct help in
-writing or research. Financial support (e.g., grant numbers) for the work
-done, for an author, or for the laboratory where the work was performed is
-best acknowledged here rather than as footnotes to the title or to an
-author's name. Contribution numbers (if the work has been published by the
-author's institution or organization) should be included as footnotes on the title page,
-not in the acknowledgments.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DATA AVAILABILITY STATEMENT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%
-\datastatement
-The data availability statement is where authors should describe how the data underlying 
-the findings within the article can be accessed and reused. Authors should attempt to 
-provide unrestricted access to all data and materials underlying reported findings. 
-If data access is restricted, authors must mention this in the statement.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% APPENDIXES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Use \appendix if there is only one appendix.
-%\appendix
-
-% Use \appendix[A], \appendix[B], if you have multiple appendixes.
-%\appendix[A]
-
-%% Appendix title is necessary! For appendix title:
-%\appendixtitle{}
-
-%%% Appendix section numbering (note, skip \section and begin with \subsection)
-% \subsection{First primary heading}
-
-% \subsubsection{First secondary heading}
-
-% \paragraph{First tertiary heading}
-
-%% Important!
-%\appendcaption{<appendix letter and number>}{<caption>} 
-%must be used for figures and tables in appendixes, e.g.,
-%
-%\begin{figure}
-%\noindent\includegraphics[width=19pc,angle=0]{figure01.pdf}\\
-%\appendcaption{A1}{Caption here.}
-%\end{figure}
-%
-% All appendix figures/tables should be placed in order AFTER the main figures/tables, i.e., tables, appendix tables, figures, appendix figures.
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % REFERENCES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Make your BibTeX bibliography by using these commands:
-% \bibliographystyle{ametsoc2014}
-% \bibliography{references}
+\bibliographystyle{ametsoc2014}
+\bibliography{references}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TABLES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Enter tables at the end of the document, before figures.
-%%
-%
-%\begin{table}[t]
-%\caption{This is a sample table caption and table layout.  Enter as many tables as
-%  necessary at the end of your manuscript. Table from Lorenz (1963).}\label{t1}
-%\begin{center}
-%\begin{tabular}{ccccrrcrc}
-%\hline\hline
-%$N$ & $X$ & $Y$ & $Z$\\
-%\hline
-% 0000 & 0000 & 0010 & 0000 \\
-% 0005 & 0004 & 0012 & 0000 \\
-% 0010 & 0009 & 0020 & 0000 \\
-% 0015 & 0016 & 0036 & 0002 \\
-% 0020 & 0030 & 0066 & 0007 \\
-% 0025 & 0054 & 0115 & 0024 \\
-%\hline
-%\end{tabular}
-%\end{center}
-%\end{table}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% FIGURES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Enter figures at the end of the document, after tables.
-%%
-%
-%\begin{figure}[t]
-%  \noindent\includegraphics[width=19pc,angle=0]{figure01.pdf}\\
-%  \caption{Enter the caption for your figure here.  Repeat as
-%  necessary for each of your figures. Figure from \protect\cite{Knutti2008}.}\label{f1}
-%\end{figure}
 
 \end{document}
