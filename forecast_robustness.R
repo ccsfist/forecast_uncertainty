@@ -59,21 +59,40 @@ for (country in countries) {
   
   bootstrap_results <- trigger_uncertainty(admin_0_triggers,5)
   
-  plot <- ggplot(bootstrap_results,aes(y=new_threshold,x=month)) + 
-    facet_grid(cols=vars(freq)) +
-    geom_boxplot()  +
-    geom_point(aes(y=old_threshold,x=month),color='red') + 
-    geom_text(data = bootstrap_results %>% group_by(month,freq) %>% summarise_all(max), aes(y=old_threshold,x=month,label=round(old_threshold,2)),color='red',alpha=0.7,vjust=-0.5) +
-    geom_hline(aes(yintercept = as.numeric(freq)),linetype='dashed') +
-    theme_bw() +
-    ylim(c(0,50)) +
-    xlab("Issue month") +
-    ylab("Prob. non-exceedence") +
-    ggtitle(paste0(country," trigger uncertainty range"),subtitle = "AA threshold in red; clim. odds dotted line")
+  # plot <- ggplot(bootstrap_results,aes(y=new_threshold,x=month)) + 
+  #   facet_grid(cols=vars(freq)) +
+  #   geom_boxplot()  +
+  #   geom_point(aes(y=old_threshold,x=month),color='red') + 
+  #   geom_text(data = bootstrap_results %>% group_by(month,freq) %>% summarise_all(max), aes(y=old_threshold,x=month,label=round(old_threshold,2)),color='red',alpha=0.7,vjust=-0.5) +
+  #   geom_hline(aes(yintercept = as.numeric(freq)),linetype='dashed') +
+  #   theme_bw() +
+  #   ylim(c(0,50)) +
+  #   xlab("Issue month") +
+  #   ylab("Prob. non-exceedence") +
+  #   ggtitle(paste0(country," trigger uncertainty range"),subtitle = "AA threshold in red; clim. odds dotted line")
   
-  png(file=paste0(getwd(),"/figures/",country,".png"),width=650,height=400)
+  empirical <- admin_0_triggers %>% filter(month == max(month), freq == max(freq))
+  bootstrap <- bootstrap_results %>% filter(month == max(month), freq == max(freq))
+  
+  colors <- c("Cumulative Forecasts, 1983-present"="black",
+              "Empirical Trigger Threshold"="red",
+              "Bootstrapped Probability of Passing Threshold" = "blue")
+  
+  plot <- ggplot(empirical,aes(x=forecast)) + stat_ecdf(aes(color="Cumulative Forecasts, 1983-present")) + 
+    stat_ecdf(data=bootstrap,aes(x=new_threshold,color='Bootstrapped Probability of Passing Threshold')) +
+    geom_vline(data=bootstrap,aes(xintercept = old_threshold,color='Empirical Trigger Threshold'),linetype='dashed') +
+    scale_color_manual(values=colors) +
+    labs(x = "Forecast Strength", y = "Probability", color = "Legend") +
+    scale_y_continuous(labels = scales::percent) +
+    ggtitle(paste0("Forecast Trigger Uncertainty Range For ",country))
+  
+  png(file=paste0(getwd(),"/figures/",country,".png"),width=650,height=350)
   print(plot)
   dev.off()
   
   i <- i + 1
 }
+
+
+
+
