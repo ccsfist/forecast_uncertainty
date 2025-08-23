@@ -116,10 +116,15 @@ Max Mauerman\affmark[1]\correspondingauthor{Max Mauerman, max.mauerman@columbia.
 \section{Introduction}
 
 % Max to draft and Dan to refine. 
+% need to intro WFP a little bit more here. 
 
-Humanitarian agencies are trying to be less reactive... advances in the state of the science on seasonal forecasting make early action against drought feasible... But forecasts need to follow standards of consistency, robustness and transparency a la WMO guidelines, especially when lives are on the line... it is not always obvious how to pragmatically account for uncertainty under those guidelines... our paper advances a simple method for quantifying one type of uncertainty, which is how sensitive the trigger definition is to the limited historical record... this method was developed to respond to practical needs from WFP, and can be replicated elsewhere. 
+Increasingly, the international community is turning to forecast-based anticipatory action to mitigate the humanitarian impacts of extreme weather events [cite]. This shift from a reactive to a proactive model of humanitarian assistance is made possible through scientific advances in medium-term forecasting, which allow skillful forecasts of seasonal total rainfall to be made as far as 3-6 months in advance of the season, depending on the region. In contrast to short-term weather forecasting, seasonal forecasting is a comparatively new science, and its policy application is even newer - the UN World Food Programme has only been using seasonal forecasts for humanitarian action since the mid-2010s. 
 
+This emerging field of practice demands new standards of consistency, robustness and transparency, particularly when the human costs of inaction are high. Accordingly, [OCHA? WFP?] has adopted the World Meteorological Organization (WMO) Guidelines for Seasonal Forecasting [cite], which mandate that such forecasts be rooted in process-based modeling of hydrological conditions, and use statistical methods that can accurately represent both observation- and model-based uncertainty in a probabilistic prediction.  
 
+However, these guidelines do not mandate how to account for one very practical source of uncertainty: The uncertain threshold for extreme weather events due to the limited historical record. This type of uncertainty matters because forecast-based anticipatory action decision rules are typically based on some rare event threshold; for example, drought action may be triggered only during the driest 20 percent of years. In practice, forecasts often fall just on either side of this threshold, and decision makers must exercise discretion in determining whether or not to act in these situations. 
+
+A more systematic way of understanding this uncertainty is needed. Accordingly, this paper presents a bootstrap resampling-based method for estimating the probability of mis-triggering anticipatory action for rare events. This method was developed to meet a practical need expressed by WFP. We demonstrate its application to actual seasonal forecast data used for WFP's drought anticipatory action projects, and discuss how the incorporation of our threshold uncertainty methodology addresses crucial aspects of practical decision-making that conventional metrics of predictive skill alone cannot. We conclude with some discussion of how this methodology could be applied more broadly.  
 
 \section{Forecast-based anticipatory action}
 
@@ -127,53 +132,52 @@ Humanitarian agencies are trying to be less reactive... advances in the state of
 
 % Abdel to help write this part.
 
-When did the UN start using forecasts for humanitarian action? What about seasonal forecasts in particular? What obstacles (scientific and practical) have kept this from happening sooner? Some parallels to similar problems in the area of parametric insurance. 
+According to WFP's 2024 Anticipatory Action - A Decade in Review report, "WFP expanded its Anticipatory Action operations from covering 4.1 million people in 36 countries in 2023 to over 6.2 million people in 44 countries in 2024" [cite]. In 2024 alone, WFP's AA programs triggered over US27 million in early action programming, reaching nearly 9 million people. WFP's AA programming includes forecasts of drought, flood and cyclones; this paper focuses on seasonal drought forecasting as a case study, but the practical problems of extreme event forecast interpretation described herein are applicable across a variety of timescales and hazards.
+
+As a member of United Nations interagency Central Emergency Response Fund (CERF), WFP is subject to common standards for transparency, accuracy and reliable of its forecast-based AA programs. These standards are particularly crucial when negotiating the conditions under which AA donor funds will be disbursed - the so-called "anticipatory action plan" (AAP). For seasonal forecasts of drought, the technical standards are primarily determined by the WMO Seasonal Forecasting Guidelines [cite, and make sure you're naming them correctly]. 
+
+The primary concern of the WMO Guidelines is ensuring the seasonal forecasts are physically plausible, not overfit to limited data, and accurately represent the various sources of uncertainty in their probabilistic predictions. For drought forecasts, WFP predominately relies on the Climate Predictability Tool (CPT) forecasting system [cite], which was developed with the WMO guidelines in mind. 
 
 \subsection{The CPT seasonal forecasting method}
 
 % Max to write but could probably use Kevin and Nathan's eyes to make sure I'm not saying anything scientifically out of pocket.
 % Talk about heuristic rules that the country offices were using, and how they are similar conceptually / functionallty to bootstrapping 
 
-Talk about the types of seasonal forecasts we are using here, where they come from and how to interpret them. Can draw from a lot of prior IRI work here. Key talking points are that CPT is a method to produce downscaled and bias-corrected seasonal forecasts using a multi-model ensemble of GCMs. The models, predictand and calibration parameters can be customized to each locality and context. Local met services use the method and software to create purpose-built forecast models for their country or region. Forecasts are presented as the probability of non-exceedance at a given percentile threshold (not only terciles).
+The CPT seasonal forecasting system is based on downscaling and bias-correcting modeled precipitation conditions from global climate models (GCMs), and combining predictions from many GCMs into a probabalistic multi-model ensemble (MME). The models, predictand and calibration parameters can be customized to each locality and context in which the model is used [cite]. For WFP's AA projects, local meteorological services in each country collaborate with WFP and [Columbia] to use the CPT method and software to create purpose-built forecast models for their country or region. 
 
-Talk a little bit about how the CPT method accounts for observational and model uncertainty.
+In technical terms, "CPT uses the principle of cross-validation to build and validate multiple linear regression models, and to select the best model.... CPT provides two types of pattern regression: Canonical Correlational Analysis (CCA) and Principal Components Regression (PCR)" [cite]. In either case, CPT uses historical cross-validation to train the CCA/PCR model for each candidate GCM, and presents statistics on its locally calibrated skill. Based on that skill assement, the user selects the GCMs they wish to include in the MME. Then, "Probabilistic forecasts are created by assuming a parametric form for the forecast PDF (for example a normal bell-curve). The regression model provides the mean of the forecast PDF; its variance (spread) is determined from the errors of the regression model’s cross-validated hindcasts. Setting the forecast spread to equal the model’s error-variance ensures that the resulting probabilistic forecasts are well calibrated - i.e., that their confidence reflects their historical accuracy" [cite]. 
+
+The resulting forecasts are presented as the probability of non-exceedance at a given percentile threshold, which can be defined based on the scenario. For example, many drought anticipatory action programs use a prediction of the probability of non-exceedance below the 20th percentile of observed historical rainfall. However, the forecast alone cannot determine the criteria for anticipatory action (a crucial part of the AAP). To do so, stakeholders must exercise some judgment in determining a numeric threshold of forecast confidence for triggering action; the following section describes the typical procedure employed.
 
 \subsection{Triggering humanitarian action using seasonal forecasts}
 
 % Max to write with Abdel's input.
 
-Talk about the mechanics of how we define a forecast action trigger here. Below is how I wrote it up for WFP in Ethiopia: 
+A core component of the Anticipatory Action Plan is the forecast “trigger”, i.e., the quantitative threshold of predictive certainty above which a certain anticipatory action will be taken. The basic rationale behind the choice of triggers is that they should be transparent, consistently applied and easily related to the expected frequency with which action will be taken. A humanitarian agency planning budgets for AA programs should be able to look at the trigger rule associated with a specific action and know that it is likely to occur - for example - 20 percent  of the time, based on historical analysis. 
 
-A core component of the Anticipatory Action Plan is the forecast “trigger”, i.e., the quantitative threshold of predictive certainty above which a certain anticipatory action will be taken. 
-This document describes the procedure used to determine triggers for the WFP AA project and the rationale for why it was implemented this way. At the end of this document, there are links to a set of live documents which provide the most up to date trigger information for each active region and woreda in the AA project.
+Accordingly, the trigger rule used for WFP's AA programs is based on a consistent frequency of action for a given type of programming, across locations and times of year. For instance, in the Somali Region of Ethiopia, “Severe” level actions are associated with a 20 percent frequency of action. This means that for a given location, for the forecast issued in a given month, we should expect Severe actions to trigger during the strongest 20pct of drought forecasts. To determine the numeric threshold associated with acting 20pct of the time, we rank all of the historical forecasts (“hindcasts”) available from the least likely prediction of drought to the most likely, and compute the 20th percentile of this distribution.
 
-The basic rationale behind the choice of triggers is that they should be transparent, consistently applied and easily related to the expected frequency with which action will be taken. A humanitarian agency planning budgets for AA programs should be able to look at the trigger rule associated with a specific action and know that it is likely to occur - for example - 20 percent  of the time, based on historical analysis. 
-
-Accordingly, the trigger rule used for this AAP is based on a consistent frequency of action for a given type of programming, across locations and times of year. For instance, in Somali Region, “Severe” level actions are associated with a 20 percent frequency of action. This means that for a given location, for the forecast issued in a given month, we should expect Severe actions to trigger during the strongest 20pct of drought forecasts. To determine the numeric threshold associated with acting 20pct of the time, we rank all of the historical forecasts (“hindcasts”) available from the least likely prediction of drought to the most likely, and compute the 20th percentile of this distribution.
-
-Talk a little about the sensitivity of this method to the choice of threshold, and what to do when the forecast is just a couple pp above or below the threshold. This is something that practitioners always have to deal with, and they have heuristic ways of managing it, but those can be inconsistent. We propose here a more systematic solution... segues into discussion about sources of uncertainty.
+This method is highly sensitive to the choice of numeric threshold. Even though the CPT methodology calibrates for observational and model uncertainty, the rare event threshold itself is subject to the inherent limitations of our comparatively short observational record (which begins in the 1980s for commonly used gridded rainfall products like CHIRPS). Consequently, decision-makers must exercise some judgment when a seasonal forecast is just above or just below the agreed-upon trigger threshold. This is typically done through heuristic means, such as adjusting the trigger threshold down by a few percentage points when observational indicators of a potential famine (such as below-average vegetation conditions leading up to the season, or assessments of food insecurity from the Integrated Phase Classification [cite]) are present. However, these heuristic approaches are highly subjective. To meet the need for a robust, transparent decision support system, a more systematic way of assessing threshold uncertainty is needed. 
 
 \subsection{Uncertainty due to the limited historical record}
 
-What we wrote for the abstract: The observational rainfall record in many regions with AA programs is limited, and interannual and interdecadal autocorrelation in the climate patterns driving seasonal rainfall further reduce the effective sample size used to calculate these thresholds \citep{martinez_seasonal_2022}. Thus, AA triggers are highly sensitive to the limited observational record, increasing the risk that action is not triggered when it is needed or that programs become financially unsustainable due to excessive triggers. In practice, forecasters are aware of this uncertainty, and ad hoc decisions on whether to trigger action are often made if seasonal forecasts are close to the threshold. Seeking a more formalized, statistically sound alternative to ad hoc approaches, governments and humanitarian agencies have asked for transparent and intuitive metrics for forecast trigger uncertainty.
+To pose the practical problem that decision-makers face in theoretical terms: The observational rainfall record in many regions with AA programs is limited, and interannual and interdecadal autocorrelation in the climate patterns driving seasonal rainfall further reduce the effective sample size used to calculate these thresholds \citep{martinez_seasonal_2022}. Thus, AA triggers are highly sensitive to the limited observational record, increasing the risk that action is not triggered when it is needed or that programs become financially unsustainable due to excessive triggers. 
+
+To address this problem, we need some statistical way of assessing the \textit{range} of plausible threshold values. Then, decision-makers can determine whether or not to exercise discretion in the decision to trigger action by assessing whether a given forecast value is above/below the threshold due to chance alone (in whih case discretion might be reasonably exercised), or whether it is statistically distinguishable from the threshold.
+
+Rare event uncertainty estimation can be parametric (such as modeling with the GEV or Gumbell distributions [cite]) or non-parametric (such as bootstrap resambling). Since we know there is a high degree of interannual (ex., ENSO) and interdecadal (ex. climate change) dependency in the historical climate record, we opt for bootstrap resampling in this case [cite, and draw out the sampling theory here a little bit more]. Our goal is to present a simple, transparent method that can be applied to a variety of forecast types. 
 
 \section{The bootstrapping method for limited data}
 
 % Nathan to write w Kevin and Max and needed. Tag in Abdel to see if this addresses his concerns about correlation 
 
+To test how sensitive the protocol is to the exact threshold values chosen, this section presents an uncertainty analysis. This analysis is based on the method of re-estimating the trigger threshold with years randomly omitted from the historical record. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error. In this case, we run 100 iterations of the re-sampling process. In each iteration, consecutive blocks of 5 years are randomly omitted from the historical record and then the threshold is re-computed. The block width of 5 was chosen here to account for the timescale of common sources of interannual correlation like ENSO, but could be adjusted by the user as they wish. 
 
-Below is what I've written about the method for WFP. We need to motivate why we're using the method of bootstrapping and why it's reasonable in this context first.
-
-The AA protocol is based on a binary trigger - if the drought forecast is above a given threshold of confidence, it triggers; if it is below this threshold, it does not.
-
-To test how sensitive the protocol is to the exact threshold values chosen, this section presents an uncertainty analysis. This analysis is based on the method of re-estimating the trigger threshold with years randomly omitted from the historical record. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error. MAKE SURE WE TALK ABOUT BLOCK RANDOMIZATION HERE
-
-In this case, we run 100 iterations of the re-sampling process. In each iteration, 5 years are randomly omitted from the historical record and then the threshold is re-computed.
-
-The box plots below depict the resulting sensitivity range in the trigger threshold for each issue month and severity level. The actual trigger threshold is shown in red. For reference, the climatological odds (the probability of non-exceedence if we were to guess from historical average conditions, without any forecast information) is shown as the dotted line.
+Figures XX shows the results of this method. The cumulative distribution of hindcasts is shown by the black slope. The empirical trigger threshold (here, the 20th percentile) is shown by the dotted red vertical line. The CDF of boostrapped replicates of the trigger threshold is shown by the blue slope. For instance, this figure tells us that based on bootstrapped resampling, there is is an estimated XX probability of the true trigger value being greater or equal to its empirical value of YY percentage points. 
 
 If the current forecast is outside of the sensitivity range, this indicates that we have statistically robust evidence that it is above or below the threshold. If the current forecast falls within the sensitivity range, this indicates that we should interpret the trigger result for the current season with caution.
 
+The following section demonstrates the application of this method to actual seasonal forecast data from XX of WFP's AA projects, generated by local meteorological services using the CPT software. 
 
 \section{Application to WFP assistance programs}
 
@@ -186,7 +190,7 @@ If the current forecast is outside of the sensitivity range, this indicates that
 % fig 1: simple obs (NOT forecast) illustration of what we are doing
 % fig 2: example using actual WFP data. can just be one area-month-freq. we can put the rest in an appendix. 
 
-% note that this method can acommodate compound / multimonth rules - be sure to mention that 
+% consider adding some visual indication of the 25-75 pctile spread to these figures? 
 
 \subsubsection{Ethiopia}
 
@@ -225,19 +229,26 @@ If the current forecast is outside of the sensitivity range, this indicates that
 
 \subsection{Discussion}
 
-- in general, the range of uncertainty tends to be a couple of percentage points in either direction.
-- forecast sharpness generally increases as the lead time decreases, but the threshold uncertainty doesn't.
-- likewise, madagascar and guatemala have the sharpest forecasts (which makes some sense; we have reason to think that ENSO teleconnections are relatively stronger there), but have as much or more threshold uncertainy than the other countries.
-- this highlights the fact that we have to think about the innate uncertainty from having a short historical record, even in places where we think the forecast model has historically performed well!
-- also in some places (ex. Niger) the trigger threshold is statistically indistinguishable from climatological odds. need to be cautious about using the forecast in such places.
+We can draw a few practical conclusions about WFP's seasonal drought forecasts from this analysis:
 
-% Max to write with Abdel's input.
+- In general, the range of uncertainty tends to be a couple of percentage points in either direction.
+
+- The forecast sharpness [explain this] generally increases as the lead time decreases, but the threshold uncertainty doesn't.
+
+- Likewise, Madagascar and Guatemala have the sharpest forecasts (unsurprisingly, as we have reason to think that ENSO teleconnections are relatively stronger there), but have as much or more threshold uncertainy than the other countries.
+
+- This highlights the fact that we have to think about the innate uncertainty from having a short historical record, even in places where we think the forecast model has historically performed well
+
+- In some places (ex. Niger) the trigger threshold is statistically indistinguishable from climatological odds. We need to be cautious about using the forecast in such places.
+
 
 \section{Conclusions and best practices}
 
-From the abstract:  Examining United Nations operational AA forecasts in sub-Saharan Africa, we demonstrate how our method provides a better quantification of critical underlying uncertainty, enabling these AA systems to meet the state-of-the-art demanded by donors and the WMO.
-
 % Max to draft and Dan to refine.
+
+% note that this method can acommodate compound / multimonth rules - be sure to mention that 
+
+From the abstract, need to elaborate: Examining United Nations operational AA forecasts in sub-Saharan Africa, we demonstrate how our method provides a better quantification of critical underlying uncertainty, enabling these AA systems to meet the state-of-the-art demanded by donors and the WMO.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
