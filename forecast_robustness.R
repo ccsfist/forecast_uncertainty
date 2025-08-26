@@ -62,15 +62,24 @@ for (country in countries) {
   
   colors <- c("Cumulative Forecasts, 1983-present"="black",
               "Empirical Trigger Threshold"="red",
-              "Bootstrapped Probability of Passing Threshold" = "blue")
+              "Bootstrapped Probability of Passing Threshold" = "blue",
+              "Current Forecast"="green")
   
+  current_forecast <- select_data$forecast[select_data$year == max(select_data$year)]
+  forecast_cdf <- ecdf(select_data$forecast)
+  current_pctile = forecast_cdf(current_forecast)
+  freq_shown <- max(admin_0_triggers$freq)
+                                           
   plot <- ggplot(select_data,aes(x=forecast)) + stat_ecdf(aes(color="Cumulative Forecasts, 1983-present")) + 
     stat_ecdf(data=bootstrap,aes(x=new_threshold,color='Bootstrapped Probability of Passing Threshold')) +
     geom_vline(data=bootstrap,aes(xintercept = old_threshold,color='Empirical Trigger Threshold'),linetype='dashed') +
+    geom_rect(xmin=quantile(bootstrap$new_threshold,0.10),xmax=quantile(bootstrap$new_threshold,0.90),ymin=Inf,ymax=-Inf,fill='blue',alpha=0.01) +
+    geom_point(x=current_forecast,y=current_pctile,size=3,aes(color='Current Forecast')) +
     scale_color_manual(values=colors) +
-    labs(x = "Forecast Strength", y = "Probability", color = "Legend") +
+    labs(x = "Forecast Strength", y = "Cumulative Probability", color = "Legend") +
     scale_y_continuous(labels = scales::percent) +
-    ggtitle(paste0("Forecast Trigger Uncertainty Range For ",country))
+    ggtitle(paste0("Forecast Trigger Uncertainty Range For ",country),subtitle = paste0("for ",freq_shown,"th percentile drought event")) +
+    xlim(c(0,100)) 
   
   png(file=paste0(getwd(),"/figures/",country,".png"),width=650,height=350)
   print(plot)
