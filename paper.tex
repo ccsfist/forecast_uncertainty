@@ -165,15 +165,15 @@ To pose the practical problem that decision-makers face in theoretical terms: Th
 
 To address this problem, we need some statistical way of assessing the \textit{range} of plausible threshold values. Then, decision-makers can determine whether or not to exercise discretion in the decision to trigger action by assessing whether a given forecast value is above/below the threshold due to chance alone (in whih case discretion might be reasonably exercised), or whether it is statistically distinguishable from the threshold.
 
-Rare event uncertainty estimation can be parametric (such as modeling with the GEV or Gumbell distributions [cite]) or non-parametric (such as bootstrap resambling). Since we know there is a high degree of interannual (ex., ENSO) and interdecadal (ex. climate change) dependency in the historical climate record, we opt for bootstrap resampling in this case [cite, and draw out the sampling theory here a little bit more]. Our goal is to present a simple, transparent method that can be applied to a variety of forecast types. 
+Rare event uncertainty estimation can be parametric (such as modeling with the GEV or Gumbell distributions [cite]) or non-parametric (such as bootstrap resampling). Since we know there is a high degree of interannual (ex., ENSO) and interdecadal (ex. climate change) dependency in the historical climate record, we opt for bootstrap resampling in this case [cite, and draw out the sampling theory here a little bit more]. Our goal is to present a simple, transparent method that can be applied to a variety of forecast types. 
 
 \section{The bootstrapping method for limited data}
 
 % Nathan to write w Kevin and Max and needed. Tag in Abdel to see if this addresses his concerns about correlation 
 
-To test how sensitive the protocol is to the exact threshold values chosen, this section presents an uncertainty analysis. This analysis is based on the method of re-estimating the trigger threshold with years randomly omitted from the historical record. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error. In this case, we run 100 iterations of the re-sampling process. In each iteration, consecutive blocks of 5 years are randomly omitted from the historical record and then the threshold is re-computed. The block width of 5 was chosen here to account for the timescale of common sources of interannual correlation like ENSO, but could be adjusted by the user as they wish. 
+To test how sensitive the protocol is to the exact threshold values chosen, this section presents an uncertainty analysis. This analysis is based on the method of re-estimating the trigger threshold with resampled draws of the historical record. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error. In this case, we run 1,000 iterations of the re-sampling process. In each iteration, we draw a sample of equal size to the original data comprised of randomly sampled blocks of 5 consecutive years, sampled with replacement. The block width of 5 was chosen here to account for the timescale of common sources of interannual correlation like ENSO, but could be adjusted by the user as they wish. 
 
-Figures XX shows the results of this method. The cumulative distribution of hindcasts is shown by the black slope. The empirical trigger threshold (here, the 20th percentile) is shown by the dotted red vertical line. The CDF of boostrapped replicates of the trigger threshold is shown by the blue slope. For instance, this figure tells us that based on bootstrapped resampling, there is is an estimated XX probability of the true trigger value being greater or equal to its empirical value of YY percentage points. 
+Figures XX shows the results of this method. The cumulative distribution of hindcasts is shown by the black slope. The empirical trigger threshold (here, the 20th percentile) is shown by the dotted red vertical line. The CDF of bootstrapped replicates of the trigger threshold is shown by the blue slope. For instance, this figure tells us that based on bootstrapped resampling, there is is an estimated XX probability of the true trigger value being greater or equal to its empirical value of YY percentage points. 
 
 If the current forecast is outside of the sensitivity range, this indicates that we have statistically robust evidence that it is above or below the threshold. If the current forecast falls within the sensitivity range, this indicates that we should interpret the trigger result for the current season with caution.
 
@@ -189,8 +189,6 @@ The following section demonstrates the application of this method to actual seas
 
 % fig 1: simple obs (NOT forecast) illustration of what we are doing
 % fig 2: example using actual WFP data. can just be one area-month-freq. we can put the rest in an appendix. 
-
-% consider adding some visual indication of the 25-75 pctile spread to these figures? 
 
 \subsubsection{Ethiopia}
 
