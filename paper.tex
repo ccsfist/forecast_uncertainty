@@ -171,7 +171,7 @@ Rare event uncertainty estimation can be parametric (such as modeling with the G
 
 % Nathan to write w Kevin and Max and needed. Tag in Abdel to see if this addresses his concerns about correlation 
 
-To test how sensitive the protocol is to the exact threshold values chosen, this section presents an uncertainty analysis. This analysis is based on the method of re-estimating the trigger threshold with resampled draws of the historical record, known as bootstrappaing [cite]. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error of a limited historical record. In this case, we run 1,000 iterations of the re-sampling process. In each iteration, we draw a sample of equal size to the original data comprised of randomly sampled blocks of 5 consecutive years, sampled with replacement. The block width of 5 was chosen here to account for the timescale of common sources of interannual correlation like ENSO. 
+To test how sensitive the protocol is to the exact threshold values chosen, this section presents an uncertainty analysis. This analysis is based on the method of re-estimating the trigger threshold with resampled draws of the historical record, known as bootstrapping [cite]. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error of a limited historical record. In this case, we run 1,000 iterations of the re-sampling process. In each iteration, we draw a sample of equal size to the original data comprised of randomly sampled blocks of 5 consecutive years, sampled with replacement. The block width of 5 was chosen here to account for the timescale of common sources of interannual correlation like ENSO. 
 
 Figures XX shows the results of this method. The cumulative distribution of hindcasts is shown by the black slope. The empirical trigger threshold (here, the 20th percentile) is shown by the dotted red vertical line. The CDF of bootstrapped replicates of the trigger threshold is shown by the blue slope. For instance, this figure tells us that based on bootstrapped resampling, there is is an estimated XX probability of the true trigger value being greater or equal to its empirical value of YY percentage points. 
 
@@ -189,6 +189,10 @@ The following section demonstrates the application of this method to actual seas
 
 % fig 1: simple obs (NOT forecast) illustration of what we are doing
 % fig 2: example using actual WFP data. can just be one area-month-freq. we can put the rest in an appendix. 
+
+% take a look at Kevin's github for some references of how to code this
+
+% discuss how uncertainty increases as frequency increases
 
 \subsubsection{Ethiopia}
 
