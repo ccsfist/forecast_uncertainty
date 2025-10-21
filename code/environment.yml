@@ -1,0 +1,26 @@
+name: aa_thresh
+channels:
+  - conda-forge
+dependencies:
+  - xarray
+  - numpy
+  - xagg
+  - pandas
+  - geopandas >= 0.12.0
+  - xesmf >= 0.7.1
+  - scipy
+  - cmocean
+  - matplotlib
+  - seaborn
+  - cartopy
+  - tqdm
+  - jupyterlab
+  - dask
+  - ipywidgets
+  - jupyterlab_widgets
+  - nc-time-axis
+  - zarr
+  - geoutils
+  - numba
+  - flox # faster xarray groupby
+  #- planetary-computer
