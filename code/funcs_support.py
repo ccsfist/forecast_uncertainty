@@ -746,8 +746,10 @@ def nan_argmax_xr(x,val=0,dim='month'):
     
         #out_vals[~np.isnan(x[0,:])] = x[:,~np.isnan(x.values[0,:])].argsort(0).isel({dim:-1-val})
         #out_vals = xr.DataArray(out_vals,dims=x.dims[1],coords={x.dims[1]:x[x.dims[1]]})
-        if not np.all(np.isnan(x).all(dim)): #else keep it nan
-            out_vals[~np.isnan(x).all(dim)] = x[:,~np.isnan(x).all(dim)].argmax(dim)
+        nan_idxs = np.isnan(x).all(dim).compute()
+        
+        if not np.all(nan_idxs): #else keep it nan
+            out_vals[~nan_idxs] = x[:,~nan_idxs].argmax(dim)
         out_vals = xr.DataArray(out_vals,dims=x.dims[1],coords={x.dims[1]:x[x.dims[1]]})
     else:
         if np.all(np.isnan(x)):
@@ -796,8 +798,10 @@ def nan_argmin_xr(x,val=0,dim='month'):
         
         #out_vals[~np.isnan(x[0,:])] = x[:,~np.isnan(x.values[0,:])].argsort(0).isel({dim:-1-val})
         #out_vals = xr.DataArray(out_vals,dims=x.dims[1],coords={x.dims[1]:x[x.dims[1]]})
-        if not np.all(np.isnan(x).all(dim)): #else keep it nan
-            out_vals[~np.isnan(x).all(dim)] = x[:,~np.isnan(x).all(dim)].argmin(dim)
+        nan_idxs = np.isnan(x).all(dim).compute()
+        
+        if not np.all(nan_idxs): #else keep it nan
+            out_vals[~nan_idxs] = x[:,~nan_idxs].argmin(dim)
         out_vals = xr.DataArray(out_vals,dims=x.dims[1],coords={x.dims[1]:x[x.dims[1]]})
     else:
         if np.all(np.isnan(x)):

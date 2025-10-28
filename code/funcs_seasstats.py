@@ -11,14 +11,15 @@ from scipy import interpolate as spi
 from tqdm.notebook import tqdm
 import copy
 
-from funcs_support import get_varlist,get_params,nan_argmax_xr,nan_argmin_xr
+from funcs_support import get_varlist,get_filepaths,get_params,nan_argmax_xr,nan_argmin_xr
 
 
 def wrapper_seasonal_stats(subset_params,overwrite=False,
                            override_30day_convert=False,
                            alt_doy_for_ann=None,
                            mod_subset=None,
-                           proc_year=True):
+                           proc_year=True,
+                           silent=True):
     ''' Wrapper function calculating seasonal stats on all precipitation files
     
     1) Get lists of models with precipitation files
@@ -67,24 +68,27 @@ def wrapper_seasonal_stats(subset_params,overwrite=False,
     # filenames
     #--------------------------------------------------------------#
     dir_list = get_params()
-    mod_list = get_varlist(source_dir=dir_list['raw'],var=['pr'])
+    #mod_list = get_varlist(source_dir=dir_list['raw'],var=['pr'])
+    df = get_filepaths()
+    df = df.query('varname == "pr" and freq == "day"')
+    mod_list = np.unique(df.model.values)
     
     mod_fns = dict()
-
+    
     if mod_subset is not None:
         mod_list = [mod for mod in mod_list if mod in mod_subset]
-
+    
     for mod in mod_list[:]: # For some reason without the [:] it randomly skips a few. No clue why. 
         #print(mod)
-        hist_fns = [os.path.basename(x) for x in glob.glob(dir_list['raw']+mod+'/pr_day*'+subset_params['experiment_id']+'*.nc')]
-
+        hist_fns = df.query('model == "'+mod+'" and exp == "'+subset_params['experiment_id']+'"')
+        hist_fns = [re.split(r'\/',row[1]['path'])[-1] for row in hist_fns.iterrows()]
+    
         if len(hist_fns)==0:
             mod_list.remove(mod)
         else:
             if len(hist_fns)>1:
                 warnings.warn('Model '+mod+' has more than one "'+subset_params['experiment_id']+'" file. Only the first, '+hist_fns[0]+', will be used.')
             mod_fns[mod]=hist_fns[0]
-    del hist_fns, mod_list
     
     
     #--------------------------------------------------------------#
@@ -104,7 +108,8 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
                         mod_name='',yr_str='',fn_suffix='',ignore_warnings=True,
                         overwrite=False,
                         override_30day_convert=False, # If False, then subset_params timeslices that end in 31 get changed to 30 if the last day of month is 30 instead of 31 (implying, sometimes, a 360-day-calendar). Problematic if input doesn't end on 12-31.
-                        diag_mode=False): #diag_mode returns C in addition to ds,bi_idxs
+                        diag_mode=False,
+                        silent = True): #diag_mode returns C in addition to ds,bi_idxs
     '''
     Calculate seasonal onsets/demises and associated seasonal statistics on a rainfall climatology
 
@@ -150,7 +155,7 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
 
 
     if overwrite or (not os.path.exists(output_fn)): 
-        if (not override_30day_convert) and (ds.time.max().dt.day==30):
+        if (not override_30day_convert) and (np.max(ds.time.dt.day)==30):
             cal360 = True
         else:
             cal360 = False
@@ -215,7 +220,7 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
             nan_bool = np.isnan(ds.pr)
 
             # This is the pixels where every timestep is nan
-            nanskips = (nan_bool.sum('time')==ds.dims['time'])
+            nanskips = (nan_bool.sum('time')==ds.dims['time']).compute()
 
             # If all the nans are just pixels where every 
             # timestep is nan, then we don't have to continue
@@ -249,11 +254,13 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
 
                 warnings.warn('Uniformly missing geographic data; no temporal truncation necessary.')
         else:
-            nanskips = xr.DataArray([False]*ds.dims['allv'],dims=['allv'],coords=[ds.allv])
+            nanskips = xr.DataArray([False]*ds.dims['allv'],dims=['allv'],coords=[ds.allv]).compute()
 
         ## Get the ratio of the strength of the yearly signal and the 
         ## 6-month signal, to figure out if the pixel has an annual or
         ## a biannual precipitation seasonality. 
+        if not silent:
+            print('- determining seasonality...')
         # Calculate the FFT
         # (Replace with `xrft` when the issue with 365-day calendars is fixed)
         ds_seas = np.zeros(ds.dims['allv'])*np.nan
@@ -314,11 +321,15 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
 
 
         #### Get the overall cumulative anomaly
+        if not silent:
+            print('- calculating cumulative anomalies...')
         # Calculate A as above
         C = (ds_doy.pr.cumsum('dayofyear') - ds_doy.pr.mean('dayofyear')*ds_doy.dayofyear)
 
 
         #### ANNUAL CYCLE (DEFAULT, TO ALSO COVER SOME MIS-IDENTIFIED BIANNUAL ONCES)
+        if not silent:
+            print('- calculating single annual cycle onset/demise')
         # Add to the dataset - with the "+1" because the day *after* the 
         # minmum/maximum should be the onset/demise in this method
         ds.sel({'season':1,'method':'dunning'})['onset'][:] = nan_argmin_xr(C,dim='dayofyear')+1
@@ -326,14 +337,20 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
 
 
         #### BIANNUAL CYCLE
+        if not silent:
+            print('- calculating biannual cycle onset/demise')
         # Smooth using 30-day running mean
         C = C.pad(dayofyear=15,mode='wrap').rolling(dayofyear=30,center=True).mean().isel(dayofyear=slice(15,365+15))
         C = C.pad(dayofyear=4,mode='wrap')
 
-        relmins = ((C[4:-4,:].values<C[5:-3,:].values) & (C[4:-4,:].values<C[6:-2,:].values) & (C[4:-4].values<C[7:-1].values) & (C[4:-4].values<C[8:].values) &
-        (C[4:-4,:].values<C[0:-8,:].values) & (C[4:-4,:].values<C[1:-7,:].values) & (C[4:-4,:].values<C[2:-6,:].values) & (C[4:-4].values<C[3:-5].values))
-        relmaxs = ((C[4:-4,:].values>C[5:-3,:].values) & (C[4:-4,:].values>C[6:-2,:].values) & (C[4:-4].values>C[7:-1].values) & (C[4:-4].values>C[8:].values) &
-        (C[4:-4,:].values>C[0:-8,:].values) & (C[4:-4,:].values>C[1:-7,:].values) & (C[4:-4,:].values>C[2:-6,:].values) & (C[4:-4].values>C[3:-5].values))
+        relmins = ((C[4:-4,:].values<C[5:-3,:].values) & (C[4:-4,:].values<C[6:-2,:].values) & 
+                   (C[4:-4].values<C[7:-1].values) & (C[4:-4].values<C[8:].values) &
+                   (C[4:-4,:].values<C[0:-8,:].values) & (C[4:-4,:].values<C[1:-7,:].values) &
+                   (C[4:-4,:].values<C[2:-6,:].values) & (C[4:-4].values<C[3:-5].values))
+        relmaxs = ((C[4:-4,:].values>C[5:-3,:].values) & (C[4:-4,:].values>C[6:-2,:].values) & 
+                   (C[4:-4].values>C[7:-1].values) & (C[4:-4].values>C[8:].values) &
+                   (C[4:-4,:].values>C[0:-8,:].values) & (C[4:-4,:].values>C[1:-7,:].values) & 
+                   (C[4:-4,:].values>C[2:-6,:].values) & (C[4:-4].values>C[3:-5].values))
 
         # Now, identify the seasons for each pixel 
         # (have to do this with a for loop, because
@@ -343,8 +360,9 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
         # end, and pick the longest ones (make sure not to
         # double count, I guess))
         bi_idxs = (ds.seas_ratio<1).values.nonzero()[0]
-
-        for idx in bi_idxs:
+        if not silent:
+            print('-- identifying biannual onset/demise by pixel...')
+        for idx in tqdm(bi_idxs):
             # Pre-generate season array
             season_dates = np.zeros((2,np.max([np.sum(relmins[:,idx]),np.sum(relmaxs[:,idx])])))*np.nan
 
@@ -470,6 +488,8 @@ def seas_params_dunning(ds,subset_params,dir_list,num_seasons=2,save_temp=True,o
 
 
         #### OTHER STATISTICS
+        if not silent:
+            print('- calculating other seasonal statistics')
         # Calculate duration (with minimum of both directions)
         ds.sel({'method':'dunning'})['duration'][:] = np.minimum(np.abs(ds.sel({'method':'dunning'})['demise'] - ds.sel({'method':'dunning'})['onset']),
                                                              365-np.abs(ds.sel({'method':'dunning'})['demise'] - ds.sel({'method':'dunning'})['onset']))
@@ -809,7 +829,7 @@ def process_seasonal_stats_dunning(mod,mod_fns,dir_list,
             warnings.warn('Directory '+dir_list['proc']+mod+'/ created')
     
     # Load file
-    ds_tmp = xr.open_dataset(dir_list['raw']+mod+'/'+mod_fns[mod])
+    ds_tmp = xr.open_dataset(dir_list['raw']+mod+'/'+mod_fns[mod],chunks='auto')
 
     # Sort by time, if not sorted (this happened with
     # a model; keeping a warning, cuz this seems weird)
@@ -844,7 +864,7 @@ def process_seasonal_stats_dunning(mod,mod_fns,dir_list,
         if overwrite | ((not overwrite) & (not os.path.exists(output_fn_avg))) | ((not overwrite) & (not os.path.exists(output_fn_yr))):
 
             # Subset temporally (switching 31 to 30 for 360-day calendars)
-            if (not override_30day_convert) and (ds_tmp.time.max().dt.day==30):
+            if (not override_30day_convert) and (np.max(ds_tmp.time.dt.day)==30):
                 ds_tmp = ds_tmp.sel(time=slice(subset_params['time'][0],re.sub('-31','-30',subset_params['time'][1])))
                 # eh just end this
                 # Throw in a warning, too, why not
@@ -885,11 +905,11 @@ def process_seasonal_stats_dunning(mod,mod_fns,dir_list,
             # This is an attempt to bypass it. I'm really not sure why it showed up / 
             # what deeper madness caused it. It showed up with MPI-ESM-1-2-HAM ssp370 processing. 
             # If this doesn't work, then I don't know what to do. Skip it, burn it, whatever. 
-            try:
-                ds_tmp = ds_tmp.load()
-            except:
-                breakpoint()
-                warnings.warn("Major issue with processing. Can't load data. Something deeper and eldritch is going on here.")
+            #try:
+            #    ds_tmp = ds_tmp.load()
+            #except:
+            #    breakpoint()
+            #    warnings.warn("Major issue with processing. Can't load data. Something deeper and eldritch is going on here.")
                 
             # Save original precip data
             da_pr = ds_tmp.pr
