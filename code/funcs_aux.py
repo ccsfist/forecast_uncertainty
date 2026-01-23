@@ -283,102 +283,55 @@ def dask_isel(ds, dim, idxs):
         args=(dim,idxs,),
         template=idxs#ds.isel({dim:0}),  # Provide a template for the resulting structure
     )
-    
-def get_landmask(params_subset,grid_spacing = 1,landsource = 'ne110', overwrite = False):
-    ''' Get landmask for a given grid spacing, geographic span
+
+def get_landmask(ds,lm_source = 'carleton'):
+    ''' Get landmask for a lat / lon grid 
 
     Parameters
     ---------------
-    params_subset : :py:meth:`dict`
-        {'lat':slice(lat0,lat1),'lon':slice(lon0,lon1)}
+    ds : :py:meth:`xr.Dataset` or :py:meth:`xr.DataArray`
+        An xarray object containing a lat / lon grid (in a format 
+        interpretable by `xagg`
 
-    grid_spacing : int
-        in degrees
-
+    lm_source : str, by default `'carleton'`
+        Polygons used to determine landmask. 
+        - if 'carleton', then uses CIL / Carleton et al. impact regions
+    
     Returns
     ---------------
-    landmask : xr.Dataset
-        Boolean variable 'landmask' giving True if grid cell contains land
+    landmask : :py:meth:`xr.DataArray`
+        A datarray returning 1 if a grid cell contains land
 
     '''
-    fs = fsspec.implementations.local.LocalFileSystem()
+    import geopandas as gpd
+    import xagg as xa
     
-    # Generate output filename for landmask
-    landmask_fn = dir_list['aux']+'geo_data/landfrac_fx_NEland_'+str(grid_spacing)+'x'+str(grid_spacing)+'grid.nc'
-
-    if (not overwrite) and fs.exists(landmask_fn):
-        # Load existing landmask
-        landmask = xr.open_dataset(landmask_fn)
-
-        # Verify that the existing landmask spans desired location
-        correct_span = ((landmask.lat.min() <= (params_subset['lat'].start + grid_spacing/2)) and 
-                        (landmask.lat.max() >= (params_subset['lat'].stop - grid_spacing/2.01)) and 
-                        (landmask.lon.min() <= (params_subset['lon'].start + grid_spacing/2)) and 
-                        (landmask.lon.max() >= (params_subset['lon'].stop - grid_spacing/2.01)))
-
-        if correct_span:
-            landmask = landmask.sel(**params_subset)
-        
-    if (not fs.exists(landmask_fn) or not correct_span):
-        print('Generating '+str(grid_spacing)+'x'+str(grid_spacing)+' landmask ...')
-        import geopandas as gpd
-        from shapely.ops import unary_union
-        import xagg as xa
-
-        # Get polygon of global land
-        if landsource == 'ne110':
-            land = gpd.read_file(dir_list['aux']+'geo_data/ne_110m_land/ne_110m_land.shp')
-        elif landsource == 'impact-regs':
-            land = gpd.read_file(dir_list['aux']+'geo_data/impact-region.shp')
-            land['geometry'] = land['geometry'].make_valid()
-        else:
-            raise NotImplementedError('Currently only Natural Earth 110 / "ne110" and Carleton et al. Impact Regions / "impact-regs" are options for source of land boundaries. "ne110" is faster, but misses most smaller islands.')
-        
-        # Turn land into single MultiPolygon for ease of calculation
-        land_uni = unary_union(land.geometry)
-        
-        # Get reference 1x1 grid
-        ref_grid = xr.Dataset(coords = {'lat':(['lat'],np.arange(params_subset['lat'].start+grid_spacing/2,
-        														 params_subset['lat'].stop-grid_spacing/2.01,
-                                                                 grid_spacing)),
-        								'lon':(['lon'],np.arange(params_subset['lon'].start+grid_spacing/2,
-        						 								 params_subset['lon'].stop-grid_spacing/2.01))})
-
-        # Create polygons for each grid cell
-        grid_cells = xa.core.create_raster_polygons(ref_grid)['gdf_pixels']
-        # Homoegenize crses
-        grid_cells = grid_cells.to_crs(land.crs)
-        
-        # Get intersection between land and grid cells
-        grid_cells['landint'] = grid_cells.geometry.apply(lambda geom: geom.intersection(land_uni))
-        
-        grid_cells['area'] = grid_cells.geometry.area
-        grid_cells['overlap'] = grid_cells['landint'].area
-
-        landmask = grid_cells[['lat','lon','overlap']].set_index(['lat','lon']).to_xarray()
-        landmask = landmask.rename({'overlap':'landmask'})
-        #landmask.attrs['DESCRIPTION'] = 'Fraction (in square degrees!, not projected!) of grid cell covered by land.'
-        landmask.attrs['DESCRIPTION'] = 'Boolean of whether grid cell contains land'
-        landmask.attrs['SOURCE'] = 'downscale_qplad.ipynb'
-        if landsource == 'ne110':
-            landmask.attrs['landsource'] = 'Natural Earth 110m land, https://www.naturalearthdata.com/downloads/110m-physical-vectors/'
-        elif landsource == 'impact-regs':
-            landmask.attrs['landsource'] = 'Carleton et al. impact regions'
-        
-        # Get bounds
-        landmask = xa.auxfuncs.get_bnds(landmask)
-
-        # Change to a boolean for a pixel containing any land at all
-        landmask = landmask.where(landmask==0,1)
-        
-        # Save
-        if fs.exists(landmask_fn):
-            fs.rm(landmask_fn)
-            print(landmask_fn+' removed to allow overwrite!')
-        utility_save(landmask,landmask_fn)
+    if lm_source == 'carleton':
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore') # Silencing invalid winding order from gpd.read_file()
+            regs_for_lm = gpd.read_file(f'{dir_list['aux']}geo_data/impact-region.shp').make_valid()
+    elif lm_source == 'ne110':
+        regs_for_lm = gpd.read_file(dir_list['aux']+'geo_data/ne_110m_land/ne_110m_land.shp')
+        # Turn into single geometry
+        regs_for_lm = regs_for_lm.union_all()
     
-    # Return landmask
+    # Create polygons for each grid cell
+    pix_polys = xa.core.create_raster_polygons(ds)['gdf_pixels']
+    # Get locations of grid cells with intersecting bounding boxes with test geom
+    int_bboxes = list(pix_polys.sindex.query(regs_for_lm, predicate='intersects'))
+    # Now, filter for just locs that truly intersect (not just bbox)
+    int_full = pix_polys.iloc[int_bboxes][pix_polys.iloc[int_bboxes].intersects(regs_for_lm)]
+    
+    # Now, mark land mask in original grid
+    pix_polys = pix_polys.set_index('pix_idx')
+    pix_polys.loc[int_full.pix_idx,'land'] = 1
+    pix_polys.loc[:,'land'] = pix_polys.loc[:,'land'].where(~np.isnan(pix_polys.loc[:,'land']),0)
+    
+    # Turn back into xarray
+    landmask = pix_polys.set_index(['lat','lon']).loc[:,'land'].to_xarray()
+
     return landmask
+
 
 
 def repeat_ds(ds,n):
