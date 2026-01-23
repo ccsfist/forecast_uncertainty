@@ -380,7 +380,9 @@ def area_mean(ds,assume_rectangular=True):
     return ds
 
 def utility_save(ds,output_fn,dir_list=None,raw_overwrite_flag=False,create_dir=True,
-                 keep_chunk_encoding = True, save_kwargs = {}):
+                 keep_chunk_encoding = True, save_kwargs = {},
+                 zarr_mode = 'w-',
+                 add_done_flag = True):
     ''' Save xarray dataset as netcdf or zarr file, with safeguards
     By default overwrites `output_fn`, *unless* `output_fn` is in the 
     raw data directory as defined by `dir_list`. Creates the implied
@@ -402,37 +404,69 @@ def utility_save(ds,output_fn,dir_list=None,raw_overwrite_flag=False,create_dir=
         If False, then if `output_fn` already exists in the `dir_list['raw']` 
         directory, an error is raised instead of overwriting the file
 
-    create_dir : :py:class`bool`, default True
+    create_dir : :py:class:`bool`, default True
         If True, then creates the implied directory (using 
         `os.path.dirname(output_fn)`) if it does not yet exist. 
-        
+
+    zarr_mode : :py:class:`str`, default "w-"
+        If saving to zarr, the mode. From the zarr docs: 
+            - "w-" : create, fail if exists
+            - "w" : create, overwrite if exists
+            - "a” : override all existing variables including dimension 
+                    coordinates (create if does not exist)
+            - "a-" : only append those variables that have append_dim 
+                     (which can be set using save_kwargs)
+            - "r+" : modify existing array values only (raise an error 
+                     if any metadata or shapes would change)
+        Note also if zarr_mode = 'w' and the file path exists, then 
+        if overwriting, the zarr store will be deleted first (following
+        the rules of `raw_overwrite_flag`). 
+
+    add_done_flag : :py:class:`bool`, default True
+        If True and saving as zarr, then adds an empty '.done' file in 
+        the zarr store after saving is complete
     '''
     
     if dir_list is None:
         dir_list = get_params()
 
+    if re.search(r'\.zarr$',os.path.basename(output_fn)):
+        filetype = 'zarr'
+    elif re.search(r'\.nc$',os.path.basename(output_fn)):    
+        filetype = 'nc'
+
     if not os.path.exists(os.path.dirname(output_fn)):
         os.mkdir(os.path.dirname(output_fn))
         print(os.path.dirname(output_fn)+' created!')
 
-    if os.path.exists(output_fn):
+    if (os.path.exists(output_fn) and 
+        ((filetype == 'nc') or 
+         ((filetype == 'zarr') and (zarr_mode == "w")))):
         if not raw_overwrite_flag:
             if re.search(r'^'+dir_list['raw'],output_fn):
                 raise FileExistsError('Trying to overwrite a file in the "raw" data directory '+dir_list['raw']+'. '+
                                       'If this is on purpose, set `raw_overwrite_flag=True`.\n'+
                                       'Attempted output filename: '+output_fn)
 
-        os.remove(output_fn)
+        if filetype == 'zarr':
+            shutil.rmtree(output_fn)
+        else:
+            os.remove(output_fn)
         print(output_fn+' removed to allow overwrite!')
 
     if not keep_chunk_encoding:
         from funcs_aux import _remove_chunk_encoding
         ds = _remove_chunk_encoding(ds)
 
-    if re.search(r'\.zarr$',os.path.basename(output_fn)):
+    if filetype == 'zarr':
         # If saving zarr
         ds.to_zarr(output_fn,**save_kwargs)
-    elif re.search(r'\.nc$',os.path.basename(output_fn)):
+
+        # Add empty 'done' file to zarr store after 
+        # completed saving if desired
+        if add_done_flag:
+            open(output_fn+'/.done', 'w').close()
+    elif filetype == 'nc':
         # If saving netcdf
         ds.to_netcdf(output_fn,**save_kwargs)
     print(output_fn+' saved!')
