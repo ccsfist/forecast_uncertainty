@@ -1,0 +1,28 @@
+name: aa_thresh
+channels:
+  - conda-forge
+dependencies:
+  - python<=3.11 # for numba to work
+  - xarray
+  - numpy
+  - xagg
+  - pandas
+  - geopandas >= 0.12.0
+  - xesmf >= 0.7.1
+  - scipy
+  - cmocean
+  - matplotlib
+  - seaborn
+  - cartopy
+  - tqdm
+  - jupyterlab
+  - dask
+  - ipywidgets
+  - jupyterlab_widgets
+  - nc-time-axis
+  - zarr
+  - geoutils
+  - fsspec
+  - numba # I think currently has an issue with python > 3.11, so if the environment isn't solving, this is probably why
+  - flox # faster xarray groupby
+  #- planetary-computer

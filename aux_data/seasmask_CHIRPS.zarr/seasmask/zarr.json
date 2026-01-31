@@ -1,0 +1,51 @@
+{
+  "shape": [
+    4,
+    400,
+    1440
+  ],
+  "data_type": "int8",
+  "chunk_grid": {
+    "name": "regular",
+    "configuration": {
+      "chunk_shape": [
+        2,
+        200,
+        720
+      ]
+    }
+  },
+  "chunk_key_encoding": {
+    "name": "default",
+    "configuration": {
+      "separator": "/"
+    }
+  },
+  "fill_value": 0,
+  "codecs": [
+    {
+      "name": "bytes"
+    },
+    {
+      "name": "zstd",
+      "configuration": {
+        "level": 0,
+        "checksum": false
+      }
+    }
+  ],
+  "attributes": {
+    "SOURCE": "map_thresh.ipynb",
+    "DESCRIPTION": "boolean for if a location, in the climatological average for CHIRPS, a given 3-month period overlaps with a local rainy season (defined as taking up more than `seas_thresh` fraction of the 3-month period, using the onset / demise calculated using the Dunning et al. (2017) methodology.",
+    "seas_thresh": "0.2",
+    "dtype": "bool"
+  },
+  "dimension_names": [
+    "season",
+    "lat",
+    "lon"
+  ],
+  "zarr_format": 3,
+  "node_type": "array",
+  "storage_transformers": []
+}
