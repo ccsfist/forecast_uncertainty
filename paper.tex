@@ -87,7 +87,7 @@ and Daniel Osgood \aff{a}
 % please apply the necessary command as shown below:
 %
 \statement
-Millions of smallholder farmers across the world are covered by Anticipatory Action (AA) programs, aid schemes designed to trigger when seasonal forecasts of precipitation fall below a locally-determined drought threshold. For aid allocation to remain transparent and financially sustainable, AA trigger thresholds are generally calculated to meet an expected frequency of action. However, these thresholds are estimated with a high degree of uncertainty due to the limited historical record of precipitation. To establish practical bounds on this uncertainty, we present a method for estimating confidence intervals on drought thresholds using resampling. Examining United Nations operational AA forecasts, we demonstrate how our method quantifies critical underlying uncertainty, enabling these AA systems to meet the state-of-the-art demanded by donors and the WMO.
+Millions of smallholder farmers across the world are covered by Anticipatory Action (AA) programs, aid schemes designed to trigger when seasonal forecasts of precipitation fall below a locally-determined drought threshold. For aid allocation to remain transparent and financially sustainable, AA trigger thresholds are generally calculated to meet an expected frequency of action. However, these thresholds are estimated with a high degree of uncertainty due to the limited historical record of precipitation. To establish practical bounds on this sampling uncertainty, we present a method for estimating confidence intervals on drought thresholds using resampling. Examining United Nations operational AA forecasts, we demonstrate how our method quantifies critical underlying uncertainty, enabling these AA systems to meet the state-of-the-art demanded by donors and the WMO.
 %
 % \capsule
 % Capsule summary here.
@@ -151,7 +151,7 @@ A core component of the Anticipatory Action Plan is the forecast “trigger”, 
 
 Accordingly, the trigger rule used for WFP's AA programs is based on a consistent frequency of action for a given type of programming, across locations and times of year. For instance, in the Somali Region of Ethiopia, WFP's “Severe” level actions are associated with a 20\% frequency of action. This means that for a given location, for the forecast issued in a given month, one should expect "Severe" actions to trigger during the strongest 20\% of drought forecasts. To determine the numeric threshold associated with acting 20\% of the time, the decision-maker ranks all of the historical forecasts (“hindcasts”) available from the least likely prediction of drought to the most likely and computes the 20th percentile of this distribution.
 
-This method is highly sensitive to the estimated percentile value used to set the trigger threshold. Even though forecast downscaling methods like CPT calibrate for observational and model uncertainty, the rare event threshold itself is subject to the inherent limitations of our comparatively short observational record, which begins in the 1980s for commonly used gridded precipitation products like CHIRPS \citep{funk_climate_2015} and GPCP \citep{huffman_improving_2009}. Consequently, decision-makers must exercise some judgment when a seasonal forecast is just above or just below the agreed-upon trigger threshold, as often happens. This is typically done through heuristic means such as adjusting the trigger threshold down by a few percentage points when observational indicators of a potential famine are present. Examples of such observational indicators include below-average vegetation conditions leading up to the season and assessments of food insecurity from the Integrated Phase Classification \citep{funk_recognizing_2019}. However, such heuristic approaches for determining when to trigger aid are inherently subjective, and risk becoming financially unsustainable if the choice to trigger is exercised too frequently. A more systematic way of assessing threshold uncertainty is needed to meet the WFP's call for a robust, transparent decision support system. 
+This method is highly sensitive to the estimated percentile value used to set the trigger threshold. Even though forecast downscaling methods like CPT calibrate for observational and model uncertainty, the rare event threshold itself is subject to the inherent limitations of our comparatively short observational record, which begins in the 1980s for commonly used gridded precipitation products like CHIRPS \citep{funk_climate_2015} and GPCP \citep{huffman_improving_2009}. Consequently, decision-makers must exercise some judgment when a seasonal forecast is just above or just below the agreed-upon trigger threshold, as often happens. This is typically done through heuristic means such as adjusting the trigger threshold down by a few percentage points when observational indicators of a potential famine are present. Examples of such observational indicators include below-average vegetation conditions leading up to the season and assessments of food insecurity from the Integrated Phase Classification \citep{funk_recognizing_2019}. However, such heuristic approaches for determining when to trigger aid are inherently subjective, and risk becoming financially unsustainable if the choice to trigger is exercised too frequently. A more systematic way of assessing threshold sampling uncertainty is needed to meet the WFP's call for a robust, transparent decision support system. 
 
 \subsection{Uncertainty due to the limited historical record}
 
@@ -163,7 +163,7 @@ To address this problem, we need a statistical method to determine the \textit{r
 
 This section presents an uncertainty analysis to determine the sensitivity of a forecast-based anticipatory action protocol to the chosen trigger threshold. To do so, we repeatedly re-estimate the trigger threshold with resampled draws of the historical record. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error of a limited historical record. To account for correlation in time series due to modes of interannual climate variability such as ENSO, we implement block-boostrapping. As such, we run 1,000 iterations of the re-sampling process in which we draw a sample with replacement from the original data comprised of randomly sampled blocks of 5 consecutive years.
 
-To illustrate this method, we first apply it to the observational record of precipitation from the Global Precipitation Climatology Project (GCPC) dataset \citep{huffman_improving_2009} over the period 1981-2025. \textbf{Figure 1} depicts, for each season, the variability in the 20th percentile threshold for seasonal total precipitation (a common choice for the anticipatory action trigger, as described above). We see that the degree of sampling uncertainty is proportionally large in much of the world, and varies across regions. Areas of greater uncertainty tend to be in regions that exhibit greater decadal variability in precipitation \citep{ehsan_real-time_2024}, although the degree of uncertainty may also be influenced by factors like missing data in the historical record. 
+To illustrate this method, we first apply it to the observational record of precipitation from the Global Precipitation Climatology Project (GCPC) dataset \citep{huffman_improving_2009} over the period 1981-2025. \textbf{Figure 1} depicts, for each season, the variability in the 20th percentile threshold for seasonal total precipitation (a common choice for the anticipatory action trigger, as described above). We see that the degree of sampling uncertainty is proportionally large in much of the world, and varies across regions. Areas of greater uncertainty tend to be in regions that exhibit greater decadal variability in precipitation (\textbf{Figure A1}), although the degree of uncertainty may also be influenced by factors like missing data in the historical record. 
 
 \begin{figure}
 \centerline{\includegraphics[width=0.8\linewidth]{2. figures/GPCP_maps.pdf}}
@@ -171,7 +171,7 @@ To illustrate this method, we first apply it to the observational record of prec
 \label{fig:gpcp}
 \end{figure}
 
-\textbf{Figure 2} illustrates the same method applied to hindcast data from CFSv2 \citep{saha_ncep_2014} initialized with a one-month lead time instead of observed precipitation. The CFSv2 model is among those commonly used by WFP for downscaled seasonal forecasting. We see similar patterns of spatial variability in trigger uncertainty in both the forecast and observational datasets, although the absolute amount of uncertainty tends to be lower in the forecast dataset. 
+\textbf{Figure 2} illustrates the same method applied to hindcast data from CFSv2 \citep{saha_ncep_2014}, initialized with a one-month lead time, instead of observed precipitation. The CFSv2 model is among those commonly used by WFP for downscaled seasonal forecasting. We see similar patterns of spatial variability in trigger uncertainty in both the forecast and observational datasets, although the absolute amount of uncertainty tends to be lower in the forecast dataset. 
 
 \begin{figure}
 \centerline{\includegraphics[width=0.8\linewidth]{2. figures/NCEP-CFSv2-ensmean_maps.pdf}}
@@ -181,7 +181,7 @@ To illustrate this method, we first apply it to the observational record of prec
 
 \section{Application to WFP assistance programs}
 
-Finally, we illustrate how the results of our bootstrapping method could be applied to a common problem in forecast-based humanitarian decision-making. We focus on the case of the Somali region of Ethiopia, in which droughts often lead to large-scale risks to food security \citep{coughlan_de_perez_rain_2019}. GCMs have known limitations in modeling the agriculturally crucial March-April-May rains in this region \citep{schwarzwald_large-scale_2023, schwarzwald_understanding_2023}; as such, WFP is often faced with forecasts of drought in this region that are uncertain or ambiguous due to low calibrated model confidence. This leads to situations in which local decision-makers must exercise discretion in whether or not to trigger action on the basis of a borderline drought forecast, as detailed in \textbf{Section 2c}. 
+Finally, we illustrate how the results of our bootstrapping method could be applied to a common problem in forecast-based humanitarian decision-making. We focus on the case of the Somali region of Ethiopia, in which droughts often lead to large-scale risks to food security \citep{coughlan_de_perez_rain_2019}. GCMs have known limitations in modeling the agriculturally crucial March-April-May rains in this region \citep{schwarzwald_large-scale_2023, schwarzwald_understanding_2023}; as such, WFP is often faced with forecasts of drought in this region that are uncertain or ambiguous due to low calibrated model confidence. This leads to situations in which local decision-makers must exercise discretion in whether or not to trigger action on the basis of a borderline drought forecast, as detailed in \textbf{Section 2b}. 
 
 The 2000 MAM season drought is a prime example of this issue - while many indicators on the ground pointed toward heightened risk of drought impact, GCM-based forecast methods would have failed to predict the full extent of this drought, leading to costly inaction \citep{funk_tailored_2023}. While in hindsight, the 2000 MAM season was a clear case in which the use of local expert discretion could have adverted a costly mistake, discretion cannot be exercised on a completely ad hoc basis if anticipatory action is to remain predictable, transparent and financially sustainable. Decision-makers need a way of quantifying the range of situations in which they might reasonably exercise discretion given an ambiguous seasonal outlook.  
 
@@ -197,7 +197,7 @@ If the current forecast is outside of this sensitivity range, this indicates to 
 
 This principle of heightened caution when faced with an ambiguous forecast is informed not only by the scientific accuracy of precipitation prediction, but also by the human costs of failing to act. Since regional vegetation conditions leading into the MAM 2000 season were below average, and the previous OND season was poor, pastoral communities were at heightened risk of livestock loss going into the season \citep{mauerman_long-term_2023}. Accounting for these factors explicitly in the trigger rule - by allowing for greater uncertainty in the trigger decision if antecedent conditions indicate high humanitarian risk - is one way our bootstrapping analysis might be operationalized. 
 
-Importantly, this bootstrapping method can only capture the uncertainty from variability on a temporal scale of similar or lower order than the length of the record used. If, for example, a major flood (such as MAM 1981 in southern Ethiopia) occurs roughly every 50 years, but we only have 30 years of data with which to measure precipitation, our bootstrapping method will be unable to capture uncertainty in the threshold for events of that return period. However, since humanitarian anticipatory action tends to be based on relatively frequent return periods (e.g. the 1 out of 5-year drought), this limitation is less of a concern in our practical setting.  
+Importantly, this bootstrapping method can only capture the uncertainty from variability on a temporal scale of similar or lower order than the length of the record used. If, for example, a major flood (such as MAM 1981 in southern Ethiopia, shown in \textbf{Figure A2}) occurs roughly every 50 years, but we only have 30 years of data with which to measure precipitation, our bootstrapping method will be unable to capture uncertainty in the threshold for events of that return period. However, since humanitarian anticipatory action tends to be based on relatively frequent return periods (e.g. the 1 out of 5-year drought), this limitation is less of a concern in our practical setting.  
 
 \section{Conclusions and best practices}
 
@@ -218,14 +218,26 @@ We thank our UN World Food Programme collaborators for their time and support, a
 % 
 %
 \datastatement
-Full replication files for the analysis and figures shown in this paper will be provided upon acceptance of the manuscript. All of the observational \citep{huffman_improving_2009} and forecast \citep{saha_ncep_2014} precipitation data used for this paper is freely available from the respective data providers. 
+The authors are currently cleaning up their code for public release. Full replication files for the analysis and figures shown in this paper will be provided upon journal acceptance. All of the observational \citep{huffman_improving_2009} and forecast \citep{saha_ncep_2014} precipitation data used for this paper is freely available from the respective data providers. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % APPENDIXES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Use \appendix if there is only one appendix.
-%\appendix
+\appendix
+
+\begin{figure}
+\centerline{\includegraphics[width=0.8\linewidth]{2. figures/GPCP_decvar_cv_maps.pdf}}
+\appendcaption{A1.}{Coefficient of variation in 10-year rolling average of GPCP rainfall, representing typical decadal variability in precipitation. Dry season areas shaded in gray.}
+\label{fig:decvar}
+\end{figure}
+
+\begin{figure}
+\centerline{\includegraphics[width=0.8\linewidth]{2. figures/case_study_somalireg_MAM_2021_GPCP.pdf}}
+\appendcaption{A2.}{Case study of the 2021 MAM season in the Somali Region of Ethiopia. These figures show the observed precipitation from GPCP for that season. The top row of maps show the observed precipitation anomaly, its distance from the trigger threshold, and the range of uncertainty in that threshold over space. The bottom row of plots shows the areal average precipitation over Somali Region as a time series and cumulative distribution. The bootstrapped range of trigger uncertainty is shown as the shaded area. Note the presence of extreme high rainfall in 1981, which skews the estimated range of uncertainty.}
+\label{fig:casestudyobs}
+\end{figure}
 
 % Use \appendix[A], \appendix[B], if you have multiple appendixes.
 %\appendix[A]
