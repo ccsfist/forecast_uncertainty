@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import re
 import os
 import glob
+import shutil
 import warnings
 import datetime
 
@@ -13,6 +14,9 @@ class NotUniqueFile(Exception):
     """ Exception for when one file needs to be loaded, but the search returned multiple files """
     pass
 
+
+
+    
 # Function to convert integer to Roman values
 def printRoman(number):
     # from https://www.geeksforgeeks.org/python-program-to-convert-integer-to-roman/
@@ -851,3 +855,58 @@ def nan_argmin_xr(x,val=0,dim='month'):
         out_vals = out_vals.unstack()
     
     return out_vals
+
+
+def load_data(proc_source,data = 'raw',return_loadfn = False,
+              chunk_sizes = {'NCEP-CFSv2':20,
+               'NCEP-CFSv2-ensmean':40,
+               'GPCP':40,
+               'CHIRPS':200}):
+    if data == 'raw':
+        df = get_filepaths(source_dir = 'raw').query('varname == "pr"')
+        if proc_source == 'GPCP':
+            #----- For GPCP ----- 
+            df_tmp = df.query('model == "GPCP"')
+            fn = df_tmp.iloc[0]['path']
+            ds = xr.open_dataset(fn)
+            
+        elif proc_source == 'CHIRPS':
+            #----- For CHIRPS ----- 
+            df_tmp = df.query('model == "CHIRPS" and freq == "Amon"')
+            fn = df_tmp.iloc[0]['path']
+            ds = xr.open_dataset(fn,chunks = {'lat':chunk_sizes[proc_source],
+                                              'lon':chunk_sizes[proc_source],'time':-1})
+    
+        elif (proc_source == 'NCEP-CFSv2') or (proc_source == 'NCEP-CFSv2-ensmean'):
+            df_tmp = df.query(f'model == "{proc_source}" and freq == "Amon" and filetype == "zarr"')
+            fn = df_tmp.iloc[0]['path']
+            ds = xr.open_zarr(fn).isel(lead=0)
+        
+        elif proc_source == 'NMME':
+            #----- For NMME -----
+            # Will require setting model explicilty in figure code
+            # AND will require changing bootstrap code to only sample from non-nan chunks
+            df_tmp = df.query('exp == "hindcasts"')
+            ds = xr.concat([xr.open_dataset(row[1]['path'],chunks={'lat':20,'lon':50})
+                            for row in df_tmp.iterrows()],
+                           dim=pd.Index([row[1]['model'] for row in df_tmp.iterrows()],
+                                                       name='model'),
+                            join='outer')
+    elif data == 'seasavg':
+        df = get_filepaths(source_dir = 'proc').query('varname == "pr" and freq == "seasavg"')
+        df_tmp = df.query(f'model == "{proc_source}"')
+        fn = df_tmp.iloc[0]['path']
+        if df_tmp.iloc[0]['filetype'] == 'zarr':
+            ds = xr.open_zarr(fn)
+            ds = ds.chunk({'lat':chunk_sizes[proc_source],
+                                              'lon':chunk_sizes[proc_source]})
+        else:
+            ds = xr.open_dataset(fn)
+    else:
+        raise KeyError(f'`data` input {data} not supported')
+
+
+    if return_loadfn:
+        return ds,fn
+    else:
+        return ds
