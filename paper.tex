@@ -27,6 +27,9 @@
 \usepackage{newtxmath}
 \usepackage{natbib}
 
+% accurate word count
+
+%TC:incbib
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -52,7 +55,7 @@
 \authors{Max Mauerman,\aff{a,b}\correspondingauthor{Max Mauerman, max.mauerman@columbia.edu} 
 Kevin Schwarzwald,\aff{a,c} 
 Nathan Lenssen,\aff{d,e} 
-Abdel-Lathif Younous,\aff{f} 
+Ahmat Younous Abdel-Lathif,\aff{f} 
 and Daniel Osgood \aff{a} 
 }
 
@@ -151,13 +154,13 @@ A core component of the Anticipatory Action Plan is the forecast “trigger”, 
 
 Accordingly, the trigger rule used for WFP's AA programs is based on a consistent frequency of action for a given type of programming, across locations and times of year. For instance, in the Somali Region of Ethiopia, WFP's “Severe” level actions are associated with a 20\% frequency of action. This means that for a given location, for the forecast issued in a given month, one should expect "Severe" actions to trigger during the strongest 20\% of drought forecasts. To determine the numeric threshold associated with acting 20\% of the time, the decision-maker ranks all of the historical forecasts (“hindcasts”) available from the least likely prediction of drought to the most likely and computes the 20th percentile of this distribution.
 
-This method is highly sensitive to the estimated percentile value used to set the trigger threshold. Even though forecast downscaling methods like CPT calibrate for observational and model uncertainty, the rare event threshold itself is subject to the inherent limitations of our comparatively short observational record, which begins in the 1980s for commonly used gridded precipitation products like CHIRPS \citep{funk_climate_2015} and GPCP \citep{huffman_improving_2009}. Consequently, decision-makers must exercise some judgment when a seasonal forecast is just above or just below the agreed-upon trigger threshold, as often happens. This is typically done through heuristic means such as adjusting the trigger threshold down by a few percentage points when observational indicators of a potential famine are present. Examples of such observational indicators include below-average vegetation conditions leading up to the season and assessments of food insecurity from the Integrated Phase Classification \citep{funk_recognizing_2019}. However, such heuristic approaches for determining when to trigger aid are inherently subjective, and risk becoming financially unsustainable if the choice to trigger is exercised too frequently. A more systematic way of assessing threshold sampling uncertainty is needed to meet the WFP's call for a robust, transparent decision support system. 
+This method is highly sensitive to the estimated percentile value used to set the trigger threshold. Even though forecast downscaling methods like CPT calibrate for observational and model uncertainty, the rare event threshold itself is subject to the inherent limitations of our comparatively short observational record, which begins in the 1980s for commonly used gridded precipitation products like CHIRPS \citep{funk_climate_2015} and GPCP \citep{huffman_improving_2009}. Consequently, decision-makers must exercise some judgment when a seasonal forecast is just above or just below the agreed-upon trigger threshold, as often happens. This is typically done through heuristic means such as adjusting the trigger threshold down by a few percentage points when observational indicators of a potential humanitarian crisis are present. Examples of such observational indicators include below-average vegetation conditions leading up to the season and assessments of food insecurity from the Integrated Phase Classification \citep{funk_recognizing_2019}. However, such heuristic approaches for determining when to trigger aid are inherently subjective, and risk becoming financially unsustainable if the choice to trigger is exercised too frequently. A more systematic way of assessing threshold sampling uncertainty is needed to meet the WFP's call for a robust, transparent decision support system. 
 
 \subsection{Uncertainty due to the limited historical record}
 
 The observational precipitation record is limited to fewer than 50 years in many regions with AA programs. Interannual and interdecadal autocorrelation in the climate patterns driving seasonal precipitation further reduce the effective sample size used to calculate percentile-based thresholds \citep{martinez_seasonal_2022}. This uncertainty in AA thresholds increases the risk that action is not triggered when it is needed or that programs become financially unsustainable due to excessive triggers. 
 
-To address this problem, we need a statistical method to determine the \textit{range} of plausible threshold values. That is, we aim to develop a simple method to construct confidence intervals for triggers such that forecasts falling within these intervals are statistically equivalent. Then, decision-makers can determine whether or not to exercise discretion in the decision to trigger action by assessing whether a given forecast value is above/below the threshold due to chance alone. Here, we present a flexible, resampling-based method for quantifying this uncertainty that can be easily adapted to existing operational AA frameworks.
+To address this problem, we need a statistical method to determine the \textit{range} of plausible threshold values. That is, we aim to construct confidence intervals for trigger thresholds such that forecasts falling within these intervals are statistically equivalent. Then, decision-makers can determine whether or not to exercise discretion in the decision to trigger action by assessing whether a given forecast value is above/below the threshold due to chance alone. Here, we present a flexible, resampling-based method for quantifying this uncertainty that can be easily adapted to existing operational AA frameworks.
 
 \section{Bootstrapping to Quantify Sampling Uncertainty of Trigger Thresholds}
 
@@ -193,9 +196,9 @@ Our bootstrapping method offers a practical solution to this problem. To illustr
 \label{fig:casestudy}
 \end{figure}
 
-If the current forecast is outside of this sensitivity range, this indicates to the decision-maker that there is statistically robust evidence that the forecasted conditions are above or below the threshold. If the current forecast falls within the sensitivity range, this indicates that the decision-maker should interpret the trigger result for the current season with caution, as the appearance of trigger (un-)worthy conditions could be occurring just by chance. We can see that the 2000 season forecast (the blue dot on the bottom row of \textbf{Figure 3}) was such a case, falling just above the trigger threshold. In this case, decision-makers faced with an uncertain outlook would have been \textit{ex ante} justified in exercising discretion in whether or not to trigger, as based on our statistical analysis. 
+If the current forecast is outside of this sensitivity range, this indicates to the decision-maker that there is statistically robust evidence that the forecasted conditions are above or below the threshold. If the current forecast falls within the sensitivity range, this indicates that the decision-maker should interpret the trigger result for the current season with caution, as the appearance of trigger (un-)worthy conditions could be occurring just by chance. We can see that the 2000 MAM season forecast (the blue dot on the bottom row of \textbf{Figure 3}) was such a case, falling just above the trigger threshold. In this case, decision-makers faced with an uncertain outlook would have been \textit{ex ante} justified in exercising discretion in whether or not to trigger, as based on our statistical analysis. 
 
-This principle of heightened caution when faced with an ambiguous forecast is informed not only by the scientific accuracy of precipitation prediction, but also by the human costs of failing to act. Since regional vegetation conditions leading into the MAM 2000 season were below average, and the previous OND season was poor, pastoral communities were at heightened risk of livestock loss going into the season \citep{mauerman_long-term_2023}. Accounting for these factors explicitly in the trigger rule - by allowing for greater uncertainty in the trigger decision if antecedent conditions indicate high humanitarian risk - is one way our bootstrapping analysis might be operationalized. 
+This principle of heightened caution when faced with an ambiguous forecast is informed not only by the scientific accuracy of precipitation prediction, but also by the human costs of failing to act. Since regional vegetation conditions leading into the 2000 MAM season were below average, and the previous OND season was poor, pastoral communities were at heightened risk of livestock loss going into the season \citep{mauerman_long-term_2023}. Accounting for these factors explicitly in the trigger rule - by allowing for greater uncertainty in the trigger decision if antecedent conditions indicate high humanitarian risk - is one way our bootstrapping analysis might be operationalized. 
 
 Importantly, this bootstrapping method can only capture the uncertainty from variability on a temporal scale of similar or lower order than the length of the record used. If, for example, a major flood (such as MAM 1981 in southern Ethiopia, shown in \textbf{Figure A2}) occurs roughly every 50 years, but we only have 30 years of data with which to measure precipitation, our bootstrapping method will be unable to capture uncertainty in the threshold for events of that return period. However, since humanitarian anticipatory action tends to be based on relatively frequent return periods (e.g. the 1 out of 5-year drought), this limitation is less of a concern in our practical setting.  
 
@@ -238,6 +241,8 @@ The authors are currently cleaning up their code for public release. Full replic
 \appendcaption{A2.}{Case study of the 2021 MAM season in the Somali Region of Ethiopia. These figures show the observed precipitation from GPCP for that season. The top row of maps show the observed precipitation anomaly, its distance from the trigger threshold, and the range of uncertainty in that threshold over space. The bottom row of plots shows the areal average precipitation over Somali Region as a time series and cumulative distribution. The bootstrapped range of trigger uncertainty is shown as the shaded area. Note the presence of extreme high rainfall in 1981, which skews the estimated range of uncertainty.}
 \label{fig:casestudyobs}
 \end{figure}
+
+\clearpage
 
 % Use \appendix[A], \appendix[B], if you have multiple appendixes.
 %\appendix[A]

@@ -1,0 +1,1 @@
+END { system('cp', 'output.bbl', 'paper.bbl'); }
