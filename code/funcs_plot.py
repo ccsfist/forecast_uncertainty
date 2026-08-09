@@ -1,3 +1,5 @@
+
+from __future__ import annotations
 import xarray as xr
 import pandas as pd
 import geopandas as gpd
@@ -5,6 +7,9 @@ import numpy as np
 from matplotlib import patches as mpatches
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+import copy
+from types import SimpleNamespace
+from collections.abc import Iterable
 import cmocean
 from cartopy import crs as ccrs
 
@@ -69,6 +74,137 @@ def add_colorbar(cbar_params,
         cbar.set_label(label)
 
     return cbar
+
+
+def _make_norm(cp, cmap):
+    cp = copy.deepcopy(cp)
+    boundaries = cp.pop("boundaries", None)
+    levels = cp.pop("levels", None)
+
+    if boundaries is None and levels is not None:
+        if np.isscalar(levels):
+            locator = mpl.ticker.MaxNLocator(int(levels))
+            boundaries = locator.tick_values(cp["vmin"], cp["vmax"])
+        else:
+            boundaries = np.asarray(levels)
+
+    if boundaries is not None:
+        ncolors = mpl.colormaps[cmap].N if isinstance(cmap, str) else cmap.N
+        norm = mpl.colors.BoundaryNorm(boundaries, ncolors=ncolors, clip=True)
+    else:
+        norm = mpl.colors.Normalize(vmin=cp.pop("vmin"), vmax=cp.pop("vmax"))
+    return norm, boundaries, cp
+
+
+def stacked_colorbars(
+    fig,
+    ax,
+    cmaps,
+    cbar_params,
+    label="",
+    texts=None,
+    height=0.06,
+    pad=0.02,
+    hspace=0.15,
+    tick_params=None,
+    text_params=None,
+    share_ticks=False,
+):
+    if tick_params is None:
+        tick_params = {}
+    if text_params is None:
+        text_params = {}
+
+    # cmaps / texts
+    if isinstance(cmaps, dict):
+        if texts is None:
+            texts = list(cmaps.keys())
+        cmaps = list(cmaps.values())
+    elif isinstance(cmaps, (str, mpl.colors.Colormap)):
+        cmaps = [cmaps]
+    else:
+        cmaps = list(cmaps)
+    n = len(cmaps)
+
+    if texts is None:
+        texts = [None] * n
+    elif isinstance(texts, str):
+        texts = [texts]
+    else:
+        texts = list(texts)
+    if len(texts) != n:
+        raise ValueError("texts must match cmaps length")
+
+    # params
+    if isinstance(cbar_params, dict):
+        cplist = [copy.deepcopy(cbar_params) for _ in range(n)]
+        multiple_scales = False
+    else:
+        cplist = list(cbar_params)
+        if len(cplist) != n:
+            raise ValueError("Need one cbar_params dict per colormap.")
+        if n > 2:
+            raise ValueError("Different scales supported only for <=2 bars.")
+        multiple_scales = True
+
+    if multiple_scales:
+        hspace = max(hspace, 0.45)
+
+    pos = ax.get_position()
+    gs = mpl.gridspec.GridSpec(
+        n, 1,
+        left=pos.x0, right=pos.x1,
+        bottom=pos.y0-pad-height,
+        top=pos.y0-pad,
+        hspace=hspace
+    )
+
+    cbs=[]
+    axes=[]
+
+    for i,(cmap,cp,text) in enumerate(zip(cmaps,cplist,texts)):
+        cax=fig.add_subplot(gs[i])
+        norm,boundaries,extra=_make_norm(cp,cmap)
+        sm=mpl.cm.ScalarMappable(norm=norm,cmap=cmap)
+        cb=fig.colorbar(sm,cax=cax,orientation="horizontal",
+                        boundaries=boundaries,**{k:extra[k] for k in extra if k not in ['vmin','vmax','levels']})
+
+        if share_ticks:
+            nbins = 5 if share_ticks is True else int(share_ticks)
+            cb.ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(nbins=nbins))
+            cb.update_ticks()
+
+        if multiple_scales:
+            if i==0:
+                cb.ax.xaxis.set_ticks_position("top")
+                cb.ax.xaxis.set_label_position("top")
+                cb.ax.tick_params(top=True,labeltop=True,
+                                  bottom=False,labelbottom=False,
+                                  **tick_params)
+            else:
+                cb.ax.tick_params(top=False,labeltop=False,
+                                  bottom=True,labelbottom=True,
+                                  **tick_params)
+                cb.set_label(label,**text_params)
+        else:
+            if i<n-1:
+                cb.set_ticks([])
+                cb.ax.tick_params(length=0)
+            else:
+                cb.set_label(label,**text_params)
+                cb.ax.tick_params(**tick_params)
+
+        if text is not None:
+            cax.text(-0.02,0.5,text,
+                     ha="right",va="center",
+                     transform=cax.transAxes,
+                     **text_params)
+
+        cbs.append(cb)
+        axes.append(cax)
+
+    return SimpleNamespace(colorbars=cbs, axes=axes)
+
 
 
 def plot_map(da,gdf,proj=ccrs.PlateCarree(),fig=None,ax=None,cat_cmap=None,**plot_kwargs):
