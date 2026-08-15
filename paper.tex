@@ -30,7 +30,6 @@
 % accurate word count
 
 %TC:incbib
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% To be entered by author:
@@ -167,6 +166,8 @@ To address this problem, we need a statistical method to determine the \textit{r
 This section presents an uncertainty analysis to determine the sensitivity of a forecast-based anticipatory action protocol to the chosen trigger threshold. To do so, we repeatedly re-estimate the trigger threshold with resampled draws of the historical record. Repeating this procedure many times gives us an estimated distribution of how much the threshold might be expected to vary due to sampling error of a limited historical record. To account for correlation in time series due to modes of interannual climate variability such as ENSO, we implement block-boostrapping. As such, we run 1,000 iterations of the re-sampling process in which we draw a sample with replacement from the original data comprised of randomly sampled blocks of 5 consecutive years.
 
 To illustrate this method, we first apply it to the observational record of precipitation from the Global Precipitation Climatology Project (GCPC) dataset \citep{huffman_improving_2009} over the period 1981-2025. \textbf{Figure 1} depicts, for each season, the variability in the 20th percentile threshold for seasonal total precipitation (a common choice for the anticipatory action trigger, as described above). We see that the degree of sampling uncertainty is proportionally large in much of the world, and varies across regions. Areas of greater uncertainty tend to be in regions that exhibit greater decadal variability in precipitation (\textbf{Figure A1}), although the degree of uncertainty may also be influenced by factors like missing data in the historical record. 
+
+We note that this block-bootstrapping method makes the assumption that the historical precipitation record is stationary. That is, free from trends over time. This is a reasonable assumption for much of the world, particularly due to the high internal variability of seasonal precipitation. However, this method will provide biased estimates in the presence of substantial historical or projected trends. If a user is employing this method in regions with known trends, a non-stationary method that accounts for this underlying trend should be used.
 
 \begin{figure}
 \centerline{\includegraphics[width=0.8\linewidth]{2. figures/GPCP_maps.pdf}}
